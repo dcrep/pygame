@@ -9,6 +9,8 @@ cache:
     - /Library/Caches/Homebrew
     - $HOME/Library/Caches/pip/wheels
     - /Library/Caches/pip/wheels
+    - $HOME/.conan/data
+
 
 # So commits do not get built twice.
 # Only test master and tagged releases on push
@@ -130,8 +132,10 @@ install:
   # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then $PIP_CMD install delocate twine; fi
 
   - python3 -m pip install conan numpy
+  - python3 -m pip install cibuildwheel==1.3.0
   - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
-  - python3 buildconfig/config.py -conan
+  - python3 buildconfig/config.py -conan --build libtiff --build opusfile --build sdl2_image --build sdl2_ttf
+  - cp build/*.dylib .
   - source build/conan/activate_run.sh
   - python3 setup.py install -noheaders
 
@@ -150,7 +154,7 @@ script:
   # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then $(set | grep PYPI_ | python -c "import sys;print('\n'.join(['unset %s' % l.split('=')[0] for l in sys.stdin.readlines() if l.startswith('PYPI')]))"); fi
   - source build/conan/activate_run.sh
   - python3 -m cibuildwheel --output-dir wheelhouse
-  - $PYTHON_EXE -m pygame.tests.__main__ -v --exclude opengl --time_out 300
+  # - $PYTHON_EXE -m pygame.tests.__main__ -v --exclude opengl --time_out 300
 
 after_success:
   # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source buildconfig/ci/travis/.travis_osx_after_success.sh; fi
